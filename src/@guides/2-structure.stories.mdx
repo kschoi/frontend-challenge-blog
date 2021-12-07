@@ -1,0 +1,87 @@
+import { Meta } from '@storybook/addon-docs'
+
+import Folder from './assets/introduce-folders.png'
+
+import Ca1 from './assets/clean-architecture-1.png'
+import Ca2 from './assets/clean-architecture-communication-flow.png'
+import Ca3 from './assets/ca-inversion-of-control.png'
+import Ca4 from './assets/ca-ours.png'
+import Ca5 from './assets/ca-ours2.png'
+
+<Meta title="⛷ 개발가이드 /🧿 프로젝트 구조" />
+
+# 프로젝트 구조
+
+---
+
+해당 프로젝트는 React + Mobx + Typescript 로 구성되어 있습니다.
+
+- 언어 : Typescript
+- 구현 :
+  - 아키텍쳐 : Clean Architecture
+  - UI 구현 : React(with Atomic design)
+- 저장소 : Mobx
+- 마크업 : TailwindCSS
+- 가이드 : Storybook
+
+<br></br>
+<br></br>
+
+## 클린 아키텍처
+
+저희 프로젝트는 유지보수를 용이하게 하기 위해 [Clean Architecture](https://blog.coderifleman.com/2017/12/18/the-clean-architecture/)를 일부 적용 했습니다.
+
+프로젝트의 전체 폴더 구조를 보면 아래와 같습니다.
+
+클린 아키텍처 관점에서, 핵심 폴더는 아래와 같이 **[domains / respositories / services / ui]** 입니다.
+
+<img src={Folder} alt="direction" />
+
+✋ 각각의 레이어 계층은 임포트의 편리함과, 중복 선언 등을 방지하고자 index 파일에 모아줍니다.
+
+- ex) entity에서 (post 도메인에 CATEGORY_TYPE, comment 도메인에 CATEGORY_TYPE 두가지 enum이 중복되게 있을 수 없습니다.)
+
+다양한 아키텍처와 마찬가지로 클린 아키텍처의 주요 목적은 관심사를 분리하는 것입니다. 각 관심사에 따라 계층 구조를 나누고, 세부 구현보다는 도메인 중심으로 설계하고 내부 영역이 프레임 워크 또는 데이터베이스 UI와 같은 외부 요소에 의존하지 않는지 확인합니다.
+
+#### 세부 구현 영역과 도메인 영역을 구분합니다.
+
+- 핵심 로직은 UI 영역과 분리되어 있기에, 프레임워크 및 라이브러리에서 어느 정도 자유롭습니다.
+- 핵심 로직이 변경되었을 때, 유지보수가 용이하며 사전 검증(단위 테스트)가 용이합니다.
+
+#### 아키텍처는 프레임워크에 의존하지 않습니다.
+
+- 아키텍처에 관한 한, React를 쓰든, Vue를 쓰든, svelt를 쓰던 유지됩니다.
+
+#### 외부 영역은 내부 영역에 의존할 수 있지만 내부 영역은 외부 영역에 의존할 수 없습니다.
+
+- ex) 내부 영역 Entity는, 외부 영역인 UI 에 영향을 받지 않습니다.
+- ex) 설명과 달리, 내부 영역 service는 외부 영역인 repositories에 영향을 받습니다. 이는 DI 를 이용하여, 단위테스트가 가능한 형태로 구현합니다.
+
+#### 고수준 및 저수준 모듈(레이어) 모두 추상화에 의존합니다.
+
+<br />
+<br />
+
+### The Clean Architecture
+
+<img src={Ca1} alt="the-clean-architecture" />
+
+### Communication Flow
+
+<img src={Ca2} alt="communication-flow" />
+
+- Use Cases 는 Entities와 Repository Interface 에 의존하고 있습니다.
+
+### Inversion of Control
+
+<img src={Ca3} alt="dependency injection" />
+
+'Repository'의 경우 어댑터 계층이므로 'Use Case'에서 'Repository'에 대해 알면 안됩니다.
+
+따라서 'Use Case'에서는 도메인 계층에 위치한 Repository Interface를 통해 구현 한 후 [Dependency Injection](https://medium.com/@jang.wangsu/di-dependency-injection-%EC%9D%B4%EB%9E%80-1b12fdefec4f)을 통해 운영해야 합니다.
+
+### 프로젝트 구조
+
+현재 프로젝트에서는, 클린 아키텍처를 더 단순하게 사용합니다.
+
+<img src={Ca4} alt="ca-ours" />
