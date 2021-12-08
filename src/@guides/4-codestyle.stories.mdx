@@ -1,0 +1,385 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="⛷ 개발가이드 /🎮 코드 스타일" />
+
+# 코드 스타일
+
+---
+
+- [참고자료](https://javascript.plainenglish.io/10-tips-to-improve-readability-in-javascript-382eb287437)
+
+# 1. Entity
+
+### 엔티티 정의 ( \*.types.ts)
+
+```javascript
+
+- API에서 수신하는 데이터는 엄밀히 말하면, 엔티티가 아닐 수 있습니다.
+- (프론트에서 더 필요한 기능이 있을 수도 있고,
+-  또 현재 프로젝트에서는 오픈 API를 사용하고 있기 때문에 저희가 DDD한 내용이 API에 모두 있지 않습니다.
+-  아니면 API가 제멋대로여서 타입정의가 까다로운 경우도 있을수도..)
+//  -  API와 같은 외부 리소스로부터 받은 순수하고 전형정인 데이터를 별도로 IEntityData로 정의합니다.
+  - 이것을 활용하여 실제 엔티티를 인스턴스화 하는데 사용합니다.
+- optional 속성인지 여부는 [ 결정권자 ]  구분하면 편합니다.
+  - id
+  - (상황에 따라 줄수도 안 줄수도 있는 속성을 가지는 API 라면, 그때는 옵셔널 대응을 지금 규칙대로 적용하지 못합니다.)
+  - (그리고 상황에 따라 줄수도 있고 안줄수도 있는 속성을 가지는 API는, 개인적으로 굉장히 싫어합니다. 언제 줄거고, 언제 안줄건데? 그 규칙은 어디 적어놨는데? ㅠㅠ)
+
+
+- .. 하고 싶은 말은 다 적자면 끝이 없기에 딱 하나만을 말한다면, 이 강의에서 세운 규칙들이 정답은 아닐 수 있다는 것을 꼭 염두해 주시면 감사하겠습니다.
+- .. 이러한 사항은 다 적을 필요가 없습니다. 팀원들에게 혼란만 줍니다. PL은 많은 고민을 통해 규칙을 정하고, 팀원들에게 납득시키면 됩니다.
+
+// 샘플
+export interface IUserData {
+  email?: string // request, response 에 모두 사용되는 속성을 최상단에
+  password: string // request 에서만 사용되는 속성은
+  id?: number
+  name?: string
+  phone?: number
+}
+
+export interface IUser extends IUserData {
+  role: USER_ROLE_TYPE
+  validate(): boolean
+}
+
+```
+
+# 1. JSX
+
+컴포넌트의 **JSX**부분은 html을 작성하고 일부 자바스크립트와 결합됩니다. 이 부분은 개발 단계 또는 빌드 단계에서 타입(형식) 체크하는 부분이 아니기 때문에,
+오타 등이 있을 경우 runtime에서만 볼 수 있습니다.
+
+따라서 **최소한의 자바스크립트만 사용** 합니다.
+
+<br />
+
+### a. 복잡한 자바스크립트 사용하지 않기
+
+```javascript
+/** Bad case */
+/** 변수가 비어 있거나 속성이 비어있을 수 있기 때문에 computed를 사용하는 것이 좋음 */
+<DataLabel
+        :value="
+            currentActivityOffer.owner.name +
+            ' ' +
+            currentActivityOffer.owner.surname
+        "
+        className="flex-1 justify-content-center"
+        label="Owner"
+/>
+
+
+/** Good case*/
+<DataLabel
+        :value="currentActivityOfferOwnerNameSurname"
+        className="flex-1 justify-content-center"
+        label="Owner"
+/>
+
+```
+
+### b. 동일한 명명 규칙 및 속성 순서 사용
+
+카멜케이스, 또는 파스칼케이스를 이용하며, 이벤트 처리를 태그 내 가장 마지막에 위치시킵니다.
+(아래는 vue 코드로, 일부 다를 수 있습니다.)
+
+```javascript
+<MyComponent
+    v-if="isVibile"
+    v-model="myModel"
+    :my-awesome-prop="myProp"
+    @my-event="onMyEvent"
+/>
+```
+
+​
+
+# 2. Script
+
+### a. Function 내에 비지니스 로직 작성하지 않기
+
+component에 있는 function 또는 Methods는 컴포넌트 state나 특정 함수를 호출하는 코드만 포함하도록 해서, 컴포넌트 및 로직 기능에 대한 테스트를 쉽게 작성할 수 있도록 합니다.
+
+```javascript
+
+/** Bad case */
+get doseCalculationMultiplier() {
+    return (product: OrderDrugProductModel) => {
+        if (
+            !product.doseIntegrityType ||
+            product.doseIntegrityType != EnumDoseIntegrityType.Calculated
+        )
+            return 0;
+        if (!product.doseCalculationType) return 0;
+.
+.
+.
+     };
+}
+
+/** Good case*/
+get doseCalculationMultiplier() {
+    return (product: OrderDrugProductModel) =>
+        OrderDrugHelper.doseCalculationMultiplier(product, this.model);
+}
+```
+
+### b. Functions or Methods
+
+- function 이름과 parameter 이름은 명확하게 작성합니다. (줄임말 X)
+
+```javascript
+/** Bad case */
+caclPersName(pers:Personnel):Personnel{
+    ...
+}
+
+/** Good case */
+calculatePersonnelName(personnel:Personnel):Personnel{
+    ...
+}
+```
+
+- 항상 리턴 타입을 추가합니다.
+
+```javascript
+/** Bad case */
+async getPatient(id:number){
+    ...
+}
+
+/** Good case */
+async getPatient(id:number):Promise<Patient>{
+    ...
+}
+```
+
+- function은 항상 하나의 일만 하도록 합니다.
+
+  - function에 둘 이상의 작업을 수행하는 코드가 있을 경우, 각 작업에 대해 다른 function을 작성하여 사용합니다.
+    <br />
+    <br />
+
+- 빠르게 return
+
+  - 얽혀있는 if 블록을 사용하지 말고, 일찍 return해서 코드를 깨끗하게 합니다.
+
+```javascript
+/** Bad case */
+coolFunction(param:string,param2:boolean):void{
+    if(param)
+    {
+        if(param2)
+        {
+            ...
+        }
+        else{
+            throw ...
+        }
+    }
+    else{
+        throw ...
+    }
+}
+
+/** Good case */
+coolFunction(param:string,param2:boolean):void{
+    if(!param) throw ...
+
+    if(!param2) throw ...
+
+    ...
+}
+```
+
+- 복잡한 if statements 를 사용하지 않기
+
+```typescript
+/** Bad case */
+if(param.indexOf('text') > -1 || param2 % 20 === 0)
+{
+    ...
+}
+
+/** Good case */
+let paramContainsText:boolean = param.indexOf('text') > -1;
+let canParam2DividedBy20:boolean = param2 % 20 === 0;
+if(paramContainsText || canParam2DividedBy20)
+{
+    ...
+}
+```
+
+- **전달인자(arguments)가 많은 경우 object 사용하기**
+
+  - 일부 function에는 많은 전달인자가 필요하며 이러한 전달인수 중 일부는 선택일 경우, object를 사용합니다.
+
+```typescript
+/** Bad case */
+static async getDocumentProcesses(
+    visitId?: number,
+    take?: number,
+    skip?: number,
+    code?: string,
+    id?: number,
+    documentCategory?: string,
+    search?: string,
+    keys?: number[],
+    include?: string[],
+    orderBy?: string,
+    documentType?: EnumDocumentType,
+    patientId?: number,
+    getAll?: boolean,
+    clientId?: number
+)
+    ..
+----------------------------------------------------------------
+getDocumentProcessesFull(
+    undefined,
+    undefined,
+    undefined,
+    this.documentCode,
+    undefined,
+    undefined,
+    this.visit.patientId,
+    undefined,
+    undefined,
+    true
+);
+
+/** Good case */
+static async getDocumentProcesses(
+ options:{
+    visitId?: number,
+    take?: number,
+    skip?: number,
+    code?: string,
+    id?: number,
+    documentCategory?: string,
+    search?: string,
+    keys?: number[],
+    include?: string[],
+    orderBy?: string,
+    documentType?: EnumDocumentType,
+    patientId?: number,
+    getAll?: boolean,
+    clientId?: number
+  }
+)
+    ..
+-----------------------------------------------------------------
+getDocumentProcessesFull(
+   {
+     code:this.documentCode,
+     patientOd:this.patientId
+   }
+);
+```
+
+- 긴 주석보다는 긴 변수로 빼는것이 낫습니다.
+
+```javascript
+/* Bad case */
+
+// verify that user has added a credit card
+function verify(user) {}
+
+/* Good Case */
+function verifyThatUserHasAddedCreditCard(user) {}
+```
+
+- 이해하기 쉽고 재사용이 가능한 형태로 작성합니다.
+
+```javascript
+/* original */
+if (
+  country !== 'finland' &&
+  country !== 'germany' &&
+  country !== 'vietnam' &&
+  country !== 'russia' &&
+  type !== '💣'
+) {
+  return Promise.reject('Not available')
+}
+
+/* refactor */
+const isInAvailableCountries =
+  country === 'finland' ||
+  country === 'germany' ||
+  country === 'vietnam' ||
+  country === 'russia'
+const hasBoom = type === '💣'
+if (!isInAvailableCountries || hasBoom) {
+  return Promise.reject('Not available')
+}
+
+/* better */
+const availableCountries = ['finland', 'germany', 'vietnam', 'russia']
+const isInAvailableCountries = availableCountries.includes(country)
+const hasBoom = type === '💣'
+if (!isInAvailableCountries || hasBoom) {
+  return Promise.reject('Not available')
+}
+```
+
+- defaults를 설정할 때에는 Object.assign 을 이용합니다.
+
+```javascript
+function getCoffee(customOptions) {
+  const defaultOptions = {
+    type: 'cappuccino',
+    size: 'small',
+    country: 'finland',
+    hasIce: false
+  }
+  const options = Object.assign(defaultOptions, customOptions)
+}
+function getCoffee(options = {}) {
+  const {
+    type = 'cappuccino',
+    size = 'small',
+    country = 'finland',
+    hasIce = false
+  } = options
+}
+function getCoffee({
+  type = 'cappuccino',
+  size = 'small',
+  country = 'finland',
+  hasIce = false
+} = {}) {}
+```
+
+- Object literals로 switch를 대체할 수 있습니다.
+
+```javascript
+/* bad case */
+let drink
+switch (type) {
+  case 'cappuccino':
+    drink = 'Cappuccino'
+    break
+  case 'flatWhite':
+    drink = 'Flat White'
+    break
+  case 'espresso':
+    drink = 'Espresso'
+    break
+  default:
+    drink = 'Unknown drink'
+}
+
+/* good case */
+const menu = {
+  cappuccino: 'Cappuccino',
+  flatWhite: 'Flat White',
+  espresso: 'Espresso',
+  default: 'Unknown drink'
+}
+const drink = menu[type] || menu['default']
+```
+
+useEffect(() => { ... }) // Run effect on every render
+useEffect(() => { ... }, []) // This effect has no dependencies so run once and never again.
+useEffect(() => { ... }, [d1, d2]) // This effect should be run if d1 or d2 changees
