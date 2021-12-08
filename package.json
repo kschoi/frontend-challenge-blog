@@ -17,11 +17,12 @@
     "web-vitals": "^1.0.1"
   },
   "scripts": {
-    "start": "set PORT=5015 && craco start",
+    "start": "concurrently --kill-others \"yarn preview\" \"yarn test\" \"yarn storybook\"",
+    "preview": "set PORT=5015 && craco start",
     "build": "craco build",
-    "test": "craco test",
+    "test": "craco test --watchAll",
     "eject": "react-scripts eject",
-    "storybook": "start-storybook -p 6006 -s public",
+    "storybook": "start-storybook -p 6007 -s public --no-manager-cache",
     "build-storybook": "build-storybook -s public"
   },
   "eslintConfig": {
@@ -60,6 +61,10 @@
     "@storybook/node-logger": "^6.4.8",
     "@storybook/preset-create-react-app": "^3.2.0",
     "@storybook/react": "^6.4.8",
+    "concurrently": "^6.4.0",
     "craco-alias": "^3.0.1"
+  },
+  "resolutions": {
+    "babel-loader": "8.1.0"
   }
 }
