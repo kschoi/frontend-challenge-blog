@@ -13,6 +13,12 @@ export const mockUsersData = (): IUserData[] => [
     name: '최경선',
     email: 'kyungsungmail.com',
     phone: '01012344321'
+  },
+  {
+    id: 1,
+    name: '육선도',
+    email: 'alexsando@ssg.com',
+    phone: 'P@ssw0rd'
   }
 ]
 
