@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import { LoginService } from '@/services/login'
 import { UserRepository } from '@/repositories'
 import Login from './LoginPresenter'
@@ -11,7 +11,7 @@ function LoginContainer() {
   const [isEmailValid, setIsEmailValid] = useState<boolean>(true)
   const [isPasswordValid, setIsPasswordValid] = useState<boolean>(true)
 
-  const navigate = useNavigate()
+  const history = useHistory()
   const service = new LoginService(new UserRepository())
 
   // *** effects
@@ -23,7 +23,7 @@ function LoginContainer() {
       service
         .loginUser(login)
         .then(() => {
-          navigate('/posts')
+          history.push('/posts')
         })
         .catch(() => alert('로그인 정보가 없습니다.'))
     },
