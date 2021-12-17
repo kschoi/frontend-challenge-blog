@@ -5,7 +5,7 @@ import { observer } from 'mobx-react'
 
 import logo from '@/ui/@core/assets/images/logo/logo.png'
 import { useStores } from '@/stores'
-import { useNavigate } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 
 import Cookies from 'js-cookie'
 
@@ -17,7 +17,7 @@ const DefaultLayout = ({ children, ...rest }) => {
   // 전역적 데이터 중 어떤 서비스 측면이 아니라 사용자, 테마, 선호되는 언어 등,
   // 서비스가 아닌 전역적이라 여겨질만한 것들에 대하여는 직접 처리할 때는 스토어로 호출한다.
   const { userStore } = useStores()
-  const navigate = useNavigate()
+  const history = useHistory()
 
   useEffect(() => {
     setIsMounted(true)
@@ -47,7 +47,7 @@ const DefaultLayout = ({ children, ...rest }) => {
                 className="text-dark hover:text-primary no-underline cursor-pointer"
                 onClick={() => {
                   Cookies.remove('token')
-                  navigate('/auth/login')
+                  history.push('/auth/login')
                 }}>
                 로그아웃
               </a>

@@ -5,7 +5,7 @@ import { Suspense, lazy } from 'react'
 // import { isUserLoggedIn } from '@/utils'
 
 // ** Router Components
-import { BrowserRouter as AppRouter, Routes as AppRoutes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter as AppRouter, Route, Switch, Redirect } from 'react-router-dom'
 
 // ** Routes & Default Routes
 import { DefaultRoute, Routes } from './modules'
@@ -68,111 +68,112 @@ const Router = () => {
       const routerProps = {}
 
       return (
-        <Route
-          exact
-          path={LayoutPaths}
-          key={index}
-          element={
-            layout === 'DefaultLayout' ? (
-              <DefaultLayout>
-                <AppRoutes>
-                  {LayoutRoutes.map((route) => {
-                    return (
-                      <Route
-                        key={route.path}
-                        path={route.path}
-                        exact={route.exact === true}
-                        render={(props) => {
-                          // ** routerProps에 props를 할당합니다.
-                          Object.assign(routerProps, {
-                            ...props,
-                            meta: route.meta
-                          })
+        <Route path={LayoutPaths} key={index}>
+          {layout === 'DefaultLayout' ? (
+            <DefaultLayout>
+              <Switch>
+                {LayoutRoutes.map((route) => {
+                  return (
+                    <Route
+                      key={route.path}
+                      path={route.path}
+                      exact={route.exact === true}
+                      render={(props) => {
+                        // ** routerProps에 props를 할당합니다.
+                        Object.assign(routerProps, {
+                          ...props,
+                          meta: route.meta
+                        })
 
-                          return (
-                            <Suspense fallback={null}>
-                              <div>
-                                <route.component {...props} />
-                              </div>
-                            </Suspense>
-                          )
-                        }}
-                      />
-                    )
-                  })}
-                </AppRoutes>
-              </DefaultLayout>
-            ) : (
-              <BlankLayout>
-                <AppRoutes>
-                  {LayoutRoutes.map((route) => {
-                    return (
-                      <Route
-                        key={route.path}
-                        path={route.path}
-                        exact={route.exact === true}
-                        render={(props) => {
-                          // ** routerProps에 props를 할당합니다.
-                          Object.assign(routerProps, {
-                            ...props,
-                            meta: route.meta
-                          })
+                        return (
+                          <Suspense fallback={null}>
+                            <div>
+                              <route.component {...props} />
+                            </div>
+                          </Suspense>
+                        )
+                      }}
+                    />
+                  )
+                })}
+              </Switch>
+            </DefaultLayout>
+          ) : (
+            <BlankLayout>
+              <Switch>
+                {LayoutRoutes.map((route) => {
+                  return (
+                    <Route
+                      key={route.path}
+                      path={route.path}
+                      exact={route.exact === true}
+                      render={(props) => {
+                        // ** routerProps에 props를 할당합니다.
+                        Object.assign(routerProps, {
+                          ...props,
+                          meta: route.meta
+                        })
 
-                          return (
-                            <Suspense fallback={null}>
-                              <div>
-                                <route.component {...props} />
-                              </div>
-                            </Suspense>
-                          )
-                        }}
-                      />
-                    )
-                  })}
-                </AppRoutes>
-              </BlankLayout>
-            )
-          }
-        />
+                        return (
+                          <Suspense fallback={null}>
+                            <div>
+                              <route.component {...props} />
+                            </div>
+                          </Suspense>
+                        )
+                      }}
+                    />
+                  )
+                })}
+              </Switch>
+            </BlankLayout>
+          )}
+        </Route>
       )
     })
   }
 
   return (
     <AppRouter>
-      {userStore?.name?.length === 0 ? (
+      {/* {userStore.name.length === 0 ? (
         <div>hello</div>
-      ) : (
-        <AppRoutes>
-          {/* 사용자가 로그인 한 경우 사용자를 DefaultRoute 로 리디렉션하고 그렇지 않으면 로그인합니다. */}
-          <Route
-            exact
-            path="/"
-            element={<Navigate to={userStore.user.id > 0 ? DefaultRoute : '/auth/login'} />}
-          />
+      ) : ( */}
+      <Switch>
+        {/* 사용자가 로그인 한 경우 사용자를 DefaultRoute 로 리디렉션하고 그렇지 않으면 로그인합니다. */}
+        <Route
+          exact
+          path="/"
+          render={() => {
+            return userStore.user.id > 0 ? (
+              <Redirect to={DefaultRoute} />
+            ) : (
+              <Redirect to="/auth/login" />
+            )
+          }}
+        />
 
-          {/* Not Auth Route */}
-          <Route
-            exact
-            path="/not-authorized"
-            element={
-              <Layouts.BlankLayout>
-                <NotAuthorized />
-              </Layouts.BlankLayout>
-            }
-          />
-          {/* {ResolveRoutes()} */}
-          {/* NotFound 페이지 */}
-          <Route
-            path="*"
-            element={
-              <Layouts.BlankLayout>
-                <NotFound />
-              </Layouts.BlankLayout>
-            }
-          />
-        </AppRoutes>
-      )}
+        {/* Not Auth Route */}
+        <Route
+          exact
+          path="/not-authorized"
+          render={(props) => (
+            <Layouts.BlankLayout>
+              <NotAuthorized />
+            </Layouts.BlankLayout>
+          )}
+        />
+        {ResolveRoutes()}
+        {/* NotFound 페이지 */}
+        <Route
+          path="*"
+          render={(props) => (
+            <Layouts.BlankLayout>
+              <NotFound />
+            </Layouts.BlankLayout>
+          )}
+        />
+      </Switch>
+      {/* )} */}
     </AppRouter>
   )
 }
